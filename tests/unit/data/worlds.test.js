@@ -45,5 +45,10 @@ describe("validateWorld / validateContent", () => {
     expect(byId.moon.name).toBe("The Moon");
     for (const w of WORLDS) expect(w.scenarios.length).toBeGreaterThanOrEqual(3);
   });
+  it("gives every inner-system world at least 5 scenarios", () => {
+    for (const id of ["sun", "mercury", "venus", "earth", "moon", "belt"]) {
+      expect(byId[id].scenarios.length).toBeGreaterThanOrEqual(5);
+    }
+  });
   it.todo("covers all three stats in every pool (enabled in Task 15)");
 });
