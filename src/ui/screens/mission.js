@@ -53,11 +53,8 @@ export const missionScreen = {
     // Repaint on window resize (main.js debounces and dispatches this).
     const view = el.querySelector("#view");
     view.addEventListener("landfall:redraw", () => drawView(view, d, m.step));
-    // The answered option button is gone from the DOM; move focus to the
-    // next control instead of dropping it back to the document.
-    if (done) {
-      const nextBtn = el.querySelector('.fb [data-action="next"]');
-      if (nextBtn instanceof HTMLElement) nextBtn.focus();
-    }
+    // Focus after answering is managed by the app shell: the re-render
+    // replaced the pressed option, so focus moves to the reveal's next
+    // control instead of dropping to the document.
   },
 };

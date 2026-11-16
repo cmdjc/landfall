@@ -21,6 +21,7 @@ export function createApp(root, { storage, random = Math.random } = {}) {
   const screenEl = root.querySelector("#screen");
   const liveEl = root.querySelector("#live");
   let lastScreen = null;
+  let chipToFocus = null;
 
   const render = () => {
     const state = store.get();
@@ -29,6 +30,22 @@ export function createApp(root, { storage, random = Math.random } = {}) {
       lastScreen = state.screen;
       const heading = screenEl.querySelector("[data-screen-title]");
       if (heading instanceof HTMLElement) heading.focus();
+      return;
+    }
+    // Same-screen re-render: every control was replaced, so focus would drop
+    // back to the document. Keep keyboard users oriented — back on the world
+    // they just picked, or on the next control inside the mission scene.
+    if (chipToFocus && state.screen === "map") {
+      const chip = screenEl.querySelector(`button[data-world-id="${chipToFocus}"]`);
+      chipToFocus = null;
+      if (chip instanceof HTMLElement) chip.focus();
+      return;
+    }
+    if (state.screen === "mission" && state.mission) {
+      const target = state.mission.picked !== null
+        ? screenEl.querySelector('.fb [data-action="next"]')
+        : screenEl.querySelector(".opts [data-option]");
+      if (target instanceof HTMLElement) target.focus();
     }
   };
 
@@ -86,13 +103,20 @@ export function createApp(root, { storage, random = Math.random } = {}) {
     const option = e.target.closest("[data-option]");
     if (option) return chooseDisplay(Number(option.dataset.option));
     const world = e.target.closest("[data-world-id]");
-    if (world && store.get().screen === "map") store.set({ selectedWorldId: world.dataset.worldId });
+    if (world && store.get().screen === "map") {
+      chipToFocus = world.dataset.worldId;
+      store.set({ selectedWorldId: world.dataset.worldId });
+    }
   });
 
   root.addEventListener("keydown", (e) => {
     if ((e.key === "Enter" || e.key === " ") && e.target instanceof Element && e.target.closest("[data-world-id]")) {
       e.preventDefault();
-      store.set({ selectedWorldId: e.target.closest("[data-world-id]").dataset.worldId });
+      const world = e.target.closest("[data-world-id]");
+      if (store.get().screen === "map") {
+        chipToFocus = world.dataset.worldId;
+        store.set({ selectedWorldId: world.dataset.worldId });
+      }
     }
   });
 
