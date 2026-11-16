@@ -74,6 +74,7 @@ describe("map integration through the app", () => {
     return { getItem: (k) => map.get(k) ?? null, setItem: (k, v) => map.set(k, v) };
   };
   const boot = () => {
+    document.body.innerHTML = "";
     const root = document.createElement("div");
     document.body.appendChild(root);
     return { root, app: createApp(root, { storage: storage(), random: () => 0.5 }) };

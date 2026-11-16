@@ -1,5 +1,6 @@
 // Canvas scenery. Everything is generated at runtime — no image assets.
 // Deterministic per world and step: the same view every visit.
+import { hashString, rngf } from "../core/rng.js";
 
 const devicePixelRatio = () => Math.min(2, globalThis.devicePixelRatio || 1);
 
@@ -155,4 +156,108 @@ export function drawOrbit(canvas, view, rng) {
   canvas.height = h * dpr;
   g.setTransform(dpr, 0, 0, dpr, 0, 0);
   orbitFx(g, w, h, view, rng);
+}
+
+const terrainFx = (g, w, h, v, r, step) => {
+  const hz = h * (step === 1 ? 0.64 : 0.5), amp = step === 1 ? 10 : 28;
+  if (v.terrain === "ocean") {
+    g.fillStyle = linGrad(g, 0, hz, 0, h, v.ground);
+    g.fillRect(0, hz, w, h - hz);
+    g.strokeStyle = "rgba(255,255,255,.25)";
+    g.lineWidth = 1.5;
+    for (let i = 0; i < 18; i++) {
+      const x = r() * w, y = hz + 8 + r() * (h - hz - 8), l = 10 + r() * 26;
+      g.beginPath();
+      g.moveTo(x, y);
+      g.quadraticCurveTo(x + l / 2, y - 4, x + l, y);
+      g.stroke();
+    }
+    return;
+  }
+  const a = r() * 6, b = r() * 6, k = v.terrain === "smooth" ? 0.45 : 1;
+  g.fillStyle = linGrad(g, 0, hz, 0, h, v.ground);
+  g.beginPath();
+  g.moveTo(0, h);
+  for (let x = 0; x <= w; x += 4) g.lineTo(x, hz - k * (Math.sin(x / 70 + a) * amp * 0.6 + Math.sin(x / 23 + b) * amp * 0.3 + r() * 2));
+  g.lineTo(w, h);
+  g.closePath();
+  g.fill();
+  const n = step === 2 ? 16 : 8;
+  for (let i = 0; i < n; i++) {
+    const x = r() * w, y = hz + 12 + r() * (h - hz - 12), s = (step === 2 ? 8 : 4) + r() * (step === 2 ? 22 : 10);
+    g.fillStyle = "rgba(0,0,0,.24)";
+    g.beginPath();
+    g.ellipse(x, y, s, s * 0.5, 0, 0, 6.3);
+    g.fill();
+    g.strokeStyle = "rgba(255,255,255,.1)";
+    g.lineWidth = 1;
+    g.beginPath();
+    g.ellipse(x, y - 1, s, s * 0.5, 0, Math.PI, 0);
+    g.stroke();
+  }
+};
+
+export function drawView(cv, world, step) {
+  if (!cv || !cv.clientWidth) return;
+  const g = cv.getContext && cv.getContext("2d");
+  if (!g) return;
+  const dpr = devicePixelRatio();
+  const w = cv.clientWidth, h = cv.clientHeight;
+  cv.width = w * dpr;
+  cv.height = h * dpr;
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const r = rngf(hashString(world.id) + step * 7919), v = world.v;
+  if (step === 0) {
+    orbitFx(g, w, h, v, r);
+    return;
+  }
+  g.fillStyle = linGrad(g, 0, 0, 0, h, v.sky || ["#2A1A10", "#0E0A08"]);
+  g.fillRect(0, 0, w, h);
+  if (v.stars) starsFx(g, w, h * 0.75, r, 70);
+  if (v.body) {
+    const b = v.body, k = g.createRadialGradient(b.x * w - b.r * 0.3, b.y * h - b.r * 0.3, 2, b.x * w, b.y * h, b.r);
+    k.addColorStop(0, b.c[0]);
+    k.addColorStop(1, b.c[1]);
+    g.fillStyle = k;
+    g.beginPath();
+    g.arc(b.x * w, b.y * h, b.r, 0, 6.3);
+    g.fill();
+  }
+  if (v.sun) {
+    const sx = w * 0.78, sy = h * 0.26, sr = v.sun[0];
+    g.save();
+    g.shadowColor = v.sun[1];
+    g.shadowBlur = sr * 1.6;
+    g.fillStyle = v.sun[1];
+    g.beginPath();
+    g.arc(sx, sy, sr, 0, 6.3);
+    g.fill();
+    g.restore();
+  }
+  if (v.bands) {
+    bandsFx(g, 0, 0, w, h, v, r);
+    if (v.kind === "star") {
+      for (let i = 0; i < 4; i++) {
+        g.fillStyle = "rgba(90,30,0,.55)";
+        g.beginPath();
+        g.ellipse(r() * w, r() * h, 6 + r() * 12, 4 + r() * 7, 0, 0, 6.3);
+        g.fill();
+      }
+    } else {
+      g.fillStyle = linGrad(g, 0, 0, 0, h, [step === 1 ? "rgba(20,10,0,0)" : "rgba(20,10,0,.25)", step === 1 ? "rgba(20,10,0,.3)" : "rgba(10,5,0,.7)"]);
+      g.fillRect(0, 0, w, h);
+    }
+  } else terrainFx(g, w, h, v, r, step);
+  if (v.clouds) {
+    for (let i = 0; i < 7; i++) {
+      g.fillStyle = "rgba(255,255,255,.55)";
+      g.beginPath();
+      g.ellipse(r() * w, r() * h * 0.45, 30 + r() * 60, 6 + r() * 10, 0, 0, 6.3);
+      g.fill();
+    }
+  }
+  if (v.haze) {
+    g.fillStyle = v.haze;
+    g.fillRect(0, 0, w, h);
+  }
 }
