@@ -24,9 +24,11 @@ const canvas = (w = 300, h = 190, ctx = null) => ({
 });
 
 describe("drawView", () => {
-  it("paints every world at every step without throwing", () => {
+  it("paints every world at every step", () => {
     for (const world of WORLDS) for (let step = 0; step < 3; step++) {
-      expect(() => drawView(canvas(), world, step)).not.toThrow();
+      const rec = recorder();
+      expect(() => drawView(canvas(300, 190, rec.ctx), world, step)).not.toThrow();
+      expect(rec.calls.length, `${world.id} step ${step}`).toBeGreaterThan(0);
     }
   });
   it("is deterministic for the same world and step", () => {

@@ -34,10 +34,9 @@ describe("validateWorld / validateContent", () => {
   it("requires the dossier fields", () => {
     expect(validateWorld({ id: "x", scenarios: [good(), good(), good()] }).length).toBeGreaterThan(0);
   });
-  it("validates the shipped worlds on every rule except stat spread", () => {
-    // Per-stat pool coverage is enforced from Task 15.
-    const errors = validateContent(WORLDS).filter((e) => !e.includes("stat:"));
-    expect(errors).toEqual([]);
+  it("validates the shipped worlds against every rule", () => {
+    // No filtering: an unknown stat name or length tell must fail the build.
+    expect(validateContent(WORLDS)).toEqual([]);
   });
   it("has 11 unique worlds with at least 3 scenarios each and a byId map", () => {
     expect(WORLDS).toHaveLength(11);
