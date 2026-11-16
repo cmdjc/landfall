@@ -55,6 +55,20 @@ describe("bootstrap", () => {
     else delete window.localStorage;
   });
 
+  it("arms the e2e hook only for the exact ?e2e=1 query", () => {
+    for (const query of ["?e2e=0", "?e2e=false", "?e2e", "?e2e=2", "?debug=1&e2e=true"]) {
+      window.history.replaceState(null, "", `/${query}`);
+      freshBoot();
+      expect(window.__landfall, query).toBeUndefined();
+    }
+    window.history.replaceState(null, "", "/?e2e=1");
+    freshBoot();
+    expect(typeof window.__landfall).toBe("object");
+    expect(typeof window.__landfall.bestDisplay).toBe("function");
+    delete window.__landfall;
+    window.history.replaceState(null, "", "/");
+  });
+
   it("shares best scores between app instances through storage", () => {
     const app1 = freshBoot();
     winWorld(app1, "mars");

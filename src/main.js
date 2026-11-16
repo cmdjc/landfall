@@ -14,8 +14,8 @@ export function boot(root = document.getElementById("app")) {
   if (!root) return undefined;
   const app = createApp(root, { storage: safeStorage() });
 
-  // E2E hook: only present when the page is opened with ?e2e=1.
-  if (new URLSearchParams(window.location.search).has("e2e")) {
+  // E2E hook: only present when the page is opened with the exact ?e2e=1.
+  if (new URLSearchParams(window.location.search).get("e2e") === "1") {
     window.__landfall = {
       bestDisplay: () => {
         const m = app.store.get().mission;
