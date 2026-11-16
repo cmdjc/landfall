@@ -95,6 +95,14 @@ describe("map integration through the app", () => {
     group.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
     expect(app.store.get().selectedWorldId).toBe("venus");
   });
+  it("highlights the selected world's SVG group", () => {
+    const { root } = boot();
+    root.querySelector('[data-action="open-map"]').click();
+    root.querySelector('button[data-world-id="mars"]').click();
+    const cls = root.querySelector('g[data-world-id="mars"]').getAttribute("class");
+    expect(cls).toContain("sel");
+    expect(root.querySelector('g[data-world-id="venus"]').getAttribute("class")).not.toContain("sel");
+  });
   it("launches the selected world into a mission", () => {
     const { root, app } = boot();
     root.querySelector('[data-action="open-map"]').click();

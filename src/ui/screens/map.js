@@ -13,7 +13,7 @@ export const mapScreen = {
       const total = totalPoints(state.best);
       h += `<div class="banner"><h3>Grand tour complete</h3><p class="muted" style="margin:4px 0 0">You earned all ${WORLD_COUNT} stamps with ${total} of ${WORLD_COUNT * MAX_WORLD_POINTS} points. Rank: ${rankFor(total, WORLD_COUNT)}. Replay any world to improve your score.</p></div>`;
     }
-    h += `<div class="mapwrap">${mapSVG(state)}</div>`;
+    h += `<div class="mapwrap">${mapSVG({ selectedId: state.selectedWorldId, best: state.best })}</div>`;
     h += `<div class="chips">${WORLDS.map((d) => `<button class="chip${state.selectedWorldId === d.id ? " sel" : ""}" data-world-id="${d.id}"><i style="background:${d.color}"></i>${d.name}${state.best[d.id] != null ? '<span class="tick" aria-label="visited">✓</span>' : ""}</button>`).join("")}</div>`;
     h += `<section id="dossier" class="card dossier" aria-live="polite">`;
     if (!sel) {
