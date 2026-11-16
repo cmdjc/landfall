@@ -18,6 +18,9 @@ export const introScreen = {
   <p class="muted">Some worlds, like the Sun and Jupiter, have no ground at all. You'll learn what happens to a probe that tries.</p>
   <button class="btn" data-action="open-map">Open the map</button>
 </section>`;
-    drawOrbit(el.querySelector("#hero"), byId.saturn.v, rngf(11));
+    const hero = el.querySelector("#hero");
+    drawOrbit(hero, byId.saturn.v, rngf(11));
+    // Repaint on window resize (main.js debounces and dispatches this).
+    hero.addEventListener("landfall:redraw", () => drawOrbit(hero, byId.saturn.v, rngf(11)));
   },
 };

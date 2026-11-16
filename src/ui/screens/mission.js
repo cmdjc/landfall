@@ -50,6 +50,9 @@ export const missionScreen = {
 <div class="card scene" id="scene">${scene}</div></section>`;
 
     drawView(el.querySelector("#view"), d, m.step);
+    // Repaint on window resize (main.js debounces and dispatches this).
+    const view = el.querySelector("#view");
+    view.addEventListener("landfall:redraw", () => drawView(view, d, m.step));
     // The answered option button is gone from the DOM; move focus to the
     // next control instead of dropping it back to the document.
     if (done) {
