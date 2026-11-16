@@ -32,6 +32,19 @@ const killGroup = (pid, signal = "SIGTERM") => {
   }
 };
 
+// The browser can still be flushing its profile when the wrapper has exited,
+// so give the removal a few retries before giving up on the temp dir.
+const removeDir = async (dir) => {
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    try {
+      rmSync(dir, { recursive: true, force: true });
+      return;
+    } catch {
+      await sleep(300);
+    }
+  }
+};
+
 async function openSocket(url) {
   const socket = new WebSocket(url);
   await new Promise((done, fail) => {
@@ -254,7 +267,7 @@ export async function connectBrowser(port = 9222) {
         await Promise.race([exited, new Promise((done) => setTimeout(done, 5000))]);
         clearTimeout(force);
       }
-      if (userDataDir) rmSync(userDataDir, { recursive: true, force: true });
+      if (userDataDir) removeDir(userDataDir);
     },
   };
 }
