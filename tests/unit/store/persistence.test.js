@@ -32,6 +32,11 @@ describe("loadBest", () => {
     s.dump("landfall.v1.best", JSON.stringify({ mars: 40, tatooine: 40, sun: 99, moon: -3, belt: 12.5, earth: "30" }));
     expect(loadBest(s)).toEqual({ mars: 40 });
   });
+  it("drops inherited property names like constructor and toString", () => {
+    const s = memoryStorage();
+    s.dump("landfall.v1.best", JSON.stringify({ constructor: 40, toString: 20, valueOf: 30, mars: 25 }));
+    expect(loadBest(s)).toEqual({ mars: 25 });
+  });
   it("never throws when storage reads or writes fail", () => {
     expect(loadBest(memoryStorage({ readFails: true }))).toEqual({});
     expect(() => saveBest(memoryStorage({ writeFails: true }), { mars: 40 })).not.toThrow();

@@ -13,7 +13,7 @@ export function loadBest(storage) {
     if (!data || typeof data !== "object" || Array.isArray(data)) return {};
     const best = {};
     for (const [id, value] of Object.entries(data)) {
-      if (byId[id] && Number.isInteger(value) && value >= 0 && value <= MAX_WORLD_POINTS) best[id] = value;
+      if (Object.hasOwn(byId, id) && Number.isInteger(value) && value >= 0 && value <= MAX_WORLD_POINTS) best[id] = value;
     }
     return best;
   } catch {
